@@ -1,5 +1,5 @@
 from objects import *
-
+import traceback
 
 def input_error(func):
     def inner(*args, **kwargs):
@@ -11,8 +11,12 @@ def input_error(func):
             return "Arguments for command missing. Please try again"
         except KeyError:
             return "Contact not found"
+        except AttributeError:
+            return "Contact not found"
+        except CustomError as e:
+            return e.message
         except Exception as e:
-            return f"Dear User, Sorry for this error :( . You can report this error to 'goit_support_team@gmail.com' and we will fix it. {type(e)} : {e}"
+            return f"{traceback.format_exc()} \nDear User, Sorry for this error :( . You can report this error to 'goit_support_team@gmail.com' and we will fix it."
     return inner
 
 
@@ -55,28 +59,33 @@ def change_phone(contacts: AddressBook, args):
 def show_phones(contacts, args):
     name, *_ = args
     record = contacts.find(name)
-    return record.phones
+    if not record:
+        raise KeyError
+    elif record.phone:
+        return record.phones
+    else:
+        return f"No phone numbers of {name} recorded "
 
 
 @input_error
-def find_phone(contacts, args):
+def find_phone(contacts, args):  
     phone, *_ = args
     for record in contacts.values():
         match = record.find_phone(phone)
         if match:
             return f'{phone} is phone number of {record.name}'
-    return "phone not found"
+    raise CustomError('phone not found')
 
 
 @input_error
-def remove_phone(contacts, args):
+def remove_phone(contacts, args):  # add error
     name, phone, *_ = args
     record = contacts.find(name)
-    if record:
+    if not record:
+        raise KeyError
+    else:
         record.remove_phone(phone)
         return f"phone deleted"
-    else:
-        return f"No contact with {name} name found"
 
 
 @input_error
@@ -90,8 +99,8 @@ def delete_contact(contacts, args):
 def add_birthday(contacts, args):
     name, birthday, *_ = args
     record = contacts.find(name)
-    if record is None:
-        return f"No contact with {name} name found"
+    if not record:
+        raise KeyError
     else:
         record.add_birthday(birthday)
         return "Birthday added"
@@ -101,13 +110,12 @@ def add_birthday(contacts, args):
 def show_birthday(contacts, args):
     name, *_ = args
     record = contacts.find(name)
-    if record is None:
-        return f"No contact with {name} name found"
+    if not record:
+        raise KeyError
     elif not record.birthday:
         return f"Birtday of {name} is not assigned"
     else:
-        birthday = contacts.date_to_string(record.birthday.value)
-        return f"Birhtday of {record.name} is {birthday}"
+        return f"Birhtday of {record.name} is {record.birthday}"
 
 
 @input_error
@@ -115,7 +123,7 @@ def all_birthdays(contacts, args):
     upcoming_birthdays = contacts.get_upcoming_birtdays()
     if upcoming_birthdays:
         return upcoming_birthdays
-    return "No birthday dates in contact book"
+    return "No birthays in next 7 days"
 
 
 def all_commands(contacts, *_):

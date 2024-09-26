@@ -2,6 +2,11 @@ from collections import UserDict
 from datetime import datetime, date, timedelta
 import re
 
+class CustomError(Exception) :
+    def __init__(self, message) :
+        self.message = message
+        super().__init__(self.message)
+
 
 class Field:
     def __init__(self, value):
@@ -23,15 +28,17 @@ class Phone(Field):
         if re.fullmatch(r'\d{10}', value):
             super().__init__(value)
         else:
-            raise ValueError
+            raise CustomError("phone number should be 10 figures long")
 
 
 class Birthday(Field):
     def __init__(self, value):
         try:
-            super().__init__(self.string_to_date(value))
+            self.string_to_date(value)
         except ValueError:
-            raise ValueError("Invalid date format. Use DD.MM.YYYY")
+            raise CustomError("Invalid date format. Use DD.MM.YYYY")
+        else : 
+            super().__init__(value)
 
     def string_to_date(self, date_string):
         return datetime.strptime(date_string, "%d.%m.%Y").date()
@@ -51,7 +58,7 @@ class Record:
         if founded_phone:
             self.phones.remove(founded_phone)
         else:
-            raise ValueError("This number not found")
+            raise CustomError("This number not found")
 
     def edit_phone(self, old_phone, new_phone):
         self.remove_phone(old_phone)
@@ -61,7 +68,8 @@ class Record:
         for phone_object in self.phones:
             if phone_object.value == phone:
                 return phone_object
-        return None
+        else :
+            return None
 
     def add_birthday(self, value):
         self.birthday = Birthday(value)
@@ -79,21 +87,28 @@ class AddressBook(UserDict):
         name = name.capitalize()
         if name in self.data.keys():
             return self.data[name]
-        return None
+        else :
+            return None
         
 
     def delete(self, name):
-        del self.data[name.capitalize()]
+        try :
+            del self.data[name.capitalize()]
+        except KeyError :
+            raise CustomError('Contact not found')
 
     def date_to_string(self, date):
         return date.strftime("%d.%m.%Y")
+    
+    def string_to_date(self, date_string):
+        return datetime.strptime(date_string, "%d.%m.%Y").date()
 
     def give_birthdays(self):
         prepared_list = []
         for person in self.data.values():
             if person.birthday:
                 prepared_list.append(
-                    {"name": person.name.value, "birthday": self.date_to_string(person.birthday.value)})
+                    {"name": person.name.value, "birthday": self.person.birthday.value})
         return prepared_list
 
     def get_upcoming_birtdays(self, days=7):
@@ -112,7 +127,10 @@ class AddressBook(UserDict):
             return birthday
 
         for person in self.data.values():
-            birthday_this_year = person.birthday.value.replace(year=today.year)
+            
+            persons_birthday = self.string_to_date(person.birthday.value)
+            birthday_this_year = persons_birthday.replace(year=today.year)
+            
             if birthday_this_year < today:
 
                 birthday_this_year = birthday_this_year.replace(year=2025)
@@ -129,16 +147,3 @@ class AddressBook(UserDict):
     def __str__(self):
         return f"List of availible contacts:\n{'\n'.join(f'\t{str(record)}' for record in self.data.values())}"
 
-book = AddressBook()
-
-book.add_record(Record('Andrew'))
-
-andrew = book.find('andrew')
-
-print(andrew)
-
-andrew.add_birthday('27.09.2000')
-
-print(andrew.birthday)
-
-print(book.get_upcoming_birtdays())
