@@ -113,7 +113,7 @@ def show_birthday(contacts, args):
 @input_error
 def all_birthdays(contacts, args):
     upcoming_birthdays = contacts.get_upcoming_birtdays()
-    if upcoming_birthdays :
+    if upcoming_birthdays:
         return upcoming_birthdays
     return "No birthday dates in contact book"
 
