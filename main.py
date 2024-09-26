@@ -1,6 +1,7 @@
 from objects import *
 import traceback
 
+
 def input_error(func):
     def inner(*args, **kwargs):
         try:
@@ -68,7 +69,7 @@ def show_phones(contacts, args):
 
 
 @input_error
-def find_phone(contacts, args):  
+def find_phone(contacts, args):
     phone, *_ = args
     for record in contacts.values():
         match = record.find_phone(phone)
