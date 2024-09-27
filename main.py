@@ -2,6 +2,7 @@ from objects import *
 import traceback
 
 
+
 def input_error(func):
     def inner(*args, **kwargs):
         try:
