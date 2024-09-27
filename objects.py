@@ -30,6 +30,7 @@ class Phone(Field):
             super().__init__(value)
         else:
             raise CustomError("phone number should be 10 figures long")
+        
 
 
 class Birthday(Field):
@@ -129,20 +130,23 @@ class AddressBook(UserDict):
 
         for person in self.data.values():
             
-            persons_birthday = self.string_to_date(person.birthday.value)
-            birthday_this_year = persons_birthday.replace(year=today.year)
-            
-            if birthday_this_year < today:
+            if person.birthday :
+                persons_birthday = self.string_to_date(person.birthday.value)
+                birthday_this_year = persons_birthday.replace(year=today.year)
+                
+                if birthday_this_year < today:
 
-                birthday_this_year = birthday_this_year.replace(year=2025)
+                    birthday_this_year = birthday_this_year.replace(year=2025)
 
-            if 0 <= (birthday_this_year - today).days <= days:
-                birthday_this_year = adjust_for_weekend(birthday_this_year)
+                if 0 <= (birthday_this_year - today).days <= days:
+                    birthday_this_year = adjust_for_weekend(birthday_this_year)
 
-                congratulation_date_str = self.date_to_string(
-                    birthday_this_year)
-                upcoming_birthdays.append(
-                    {"name": person.name.value, "congratulation_date": congratulation_date_str})
+                    congratulation_date_str = self.date_to_string(
+                        birthday_this_year)
+                    upcoming_birthdays.append(
+                        {"name": person.name.value, "congratulation_date": congratulation_date_str})
+            else :
+                pass 
         return upcoming_birthdays
 
     def __str__(self):

@@ -63,8 +63,8 @@ def show_phones(contacts, args):
     record = contacts.find(name)
     if not record:
         raise KeyError
-    elif record.phone:
-        return record.phones
+    elif record.phones:
+        return [phone.value for phone in record.phones]
     else:
         return f"No phone numbers of {name} recorded "
 
